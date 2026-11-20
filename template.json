@@ -1,0 +1,242 @@
+{
+  "name": "Uptime Kuma 2.5 Monitoring + Status Pages (MariaDB)",
+  "description": "Self-hosted uptime monitoring, alerts and status pages on MariaDB.",
+  "category": "Observability",
+  "tags": [
+    "uptime-kuma",
+    "uptime",
+    "monitoring",
+    "status-page",
+    "alerts",
+    "healthcheck",
+    "mariadb",
+    "uptimerobot-alternative"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/uptime-kuma.svg",
+  "upstream": {
+    "uptime-kuma": "louislam/uptime-kuma 2.5.12 (released 2026-11-17, latest stable), image louislam/uptime-kuma:2.5.12@sha256:8e4b6bef96417ec98a35dc103c99cc64fc229a01e584e56d95d9004d2003c02a",
+    "mariadb": "mariadb:12.3.3@sha256:4aaf88b3106382c8c18e49f0cec60267be618fc22f858c4503afb2a2555afed3 (MariaDB 12.3.3 LTS, image rebuilt 2026-11-20)",
+    "checked": "2026-11-20"
+  },
+  "services": {
+    "Uptime Kuma": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/uptime-kuma.svg",
+      "source": {
+        "repo": "baranberkay96/uptime-kuma-railway",
+        "rootDirectory": "/services/uptime-kuma"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/api/entry-page",
+      "healthcheckTimeout": 900,
+      "restartPolicyType": "ALWAYS",
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 3001,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/app/data"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "3001",
+          "description": "HTTP port (public domain target and healthcheck).",
+          "required": true
+        },
+        "UPTIME_KUMA_ADMIN_USERNAME": {
+          "defaultValue": "admin",
+          "description": "Admin user created at the first start (letters, digits, . _ @ -).",
+          "required": true
+        },
+        "UPTIME_KUMA_ADMIN_PASSWORD": {
+          "defaultValue": "${{secret(24, \"abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789\")}}",
+          "description": "Admin password, generated at deploy and applied at the first start only (min. 12 characters). Change it later in Settings > Security.",
+          "required": true
+        },
+        "UPTIME_KUMA_ADMIN_RESET_PASSWORD": {
+          "defaultValue": "false",
+          "description": "true = set the admin password to UPTIME_KUMA_ADMIN_PASSWORD at the next start (lost password). Set back to false afterwards.",
+          "required": false
+        },
+        "UPTIME_KUMA_DB_TYPE": {
+          "defaultValue": "mariadb",
+          "description": "mariadb (the MariaDB service, recommended) or sqlite (file on the volume). Choose before the first start; there is no automatic migration.",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_HOSTNAME": {
+          "defaultValue": "${{MariaDB.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "MariaDB host on the private network.",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_PORT": {
+          "defaultValue": "${{MariaDB.MYSQLPORT}}",
+          "description": "MariaDB port.",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_NAME": {
+          "defaultValue": "${{MariaDB.MARIADB_DATABASE}}",
+          "description": "MariaDB database for Uptime Kuma.",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_USERNAME": {
+          "defaultValue": "${{MariaDB.MARIADB_USER}}",
+          "description": "MariaDB user.",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_PASSWORD": {
+          "defaultValue": "${{MariaDB.MARIADB_PASSWORD}}",
+          "description": "MariaDB password (kept in sync by reference).",
+          "required": true
+        },
+        "UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS": {
+          "defaultValue": "10",
+          "description": "Maximum database connections (1-100).",
+          "required": false
+        },
+        "TZ": {
+          "defaultValue": "UTC",
+          "description": "Server time zone, e.g. Europe/Istanbul (status pages and reports use it).",
+          "required": false
+        }
+      }
+    },
+    "MariaDB": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/mariadb.svg",
+      "source": {
+        "image": "mariadb:12.3.3@sha256:4aaf88b3106382c8c18e49f0cec60267be618fc22f858c4503afb2a2555afed3"
+      },
+      "startCommand": "/bin/bash -c 'set -e; F=/etc/mysql/conf.d/zz-railway.cnf; X=/tmp/zz-railway.cnf; k() { v=$1; if [ $v -lt $2 ]; then v=$2; fi; if [ $v -gt $3 ]; then v=$3; fi; echo $v; }; n() { case \"$1\" in \"\"|*[!0-9]*) echo $2 ;; *) echo $1 ;; esac; }; w() { echo \"$1 = $2\" >> $X; }; echo \"# Railway template: rewritten at every boot from the DB_* variables; DB_EXTRA_ARGS overrides it\" > $X; echo \"[mariadbd]\" >> $X; COL=\"${DB_COLLATION:-utf8mb4_unicode_ci}\"; case \"$COL\" in utf8mb4_) COL=bad ;; utf8mb4_*[!a-z0-9_]*) COL=bad ;; utf8mb4_*) ;; *) COL=bad ;; esac; if [ \"$COL\" = bad ]; then echo \"mariadb-tune: DB_COLLATION=${DB_COLLATION} is not a utf8mb4 collation name, using utf8mb4_unicode_ci\"; COL=utf8mb4_unicode_ci; fi; w character_set_server utf8mb4; w collation_server $COL; if [ \"$COL\" != utf8mb4_uca1400_ai_ci ]; then w character_set_collations utf8mb4=$COL; fi; w max_allowed_packet 64M; w innodb_use_native_aio 0; w ignore_db_dirs lost+found; case \"${DB_SLOW_QUERY_LOG:-off}\" in on|ON|On|true|TRUE|True|yes|1) SLOW=on ;; *) SLOW=off ;; esac; if [ $SLOW = on ]; then LQT=\"${DB_LONG_QUERY_TIME:-2}\"; case \"$LQT\" in \"\"|.|*[!0-9.]*|*.*.*) LQT=2 ;; esac; w log_output TABLE; w log_slow_query ON; w log_slow_query_time $LQT; fi; if [ \"${DB_TUNING:-auto}\" = off ]; then echo \"mariadb-tune: DB_TUNING=off, MariaDB defaults apply to memory and connections\"; else H=$(( $(n \"$(grep -m 1 MemTotal /proc/meminfo | tr -s \" \" | cut -d \" \" -f 2)\" 1048576) / 1024 )); L=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || cat /sys/fs/cgroup/memory/memory.limit_in_bytes 2>/dev/null || echo max); M=$(( $(n \"$L\" $((H * 1048576))) / 1048576 )); if [ $M -gt $H ]; then M=$H; fi; B=$(k $(n \"$DB_MEMORY_LIMIT_MB\" $(k $M 256 8192)) 256 4194304); P=$(k $(n \"$DB_BUFFER_POOL_MB\" $(k $((B / 2)) 128 2097152)) 32 4194304); C=$(k $(n \"$DB_MAX_CONNECTIONS\" $(k $((B / 8)) 100 500)) 10 100000); T=$(k $((B / 64)) 16 64); w innodb_buffer_pool_size ${P}M; w innodb_log_file_size $(k $((P / 4)) 96 512)M; w max_connections $C; w tmp_table_size ${T}M; w max_heap_table_size ${T}M; w innodb_io_capacity 1000; w innodb_io_capacity_max 2000; echo \"mariadb-tune: budget ${B}MB (container ${M}MB, host ${H}MB)\"; fi; mkdir -p /etc/mysql/conf.d; install -m 644 $X $F; echo \"mariadb-tune: $(grep -v \"^#\" $X | paste -sd \" \" -)\"; set -f; exec docker-entrypoint.sh \"$@\" ${DB_EXTRA_ARGS:-}' mariadb-start mariadbd",
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ALWAYS",
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/mysql"
+      },
+      "variables": {
+        "MARIADB_ROOT_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Root password, generated at deploy (letters and digits). Not used by Uptime Kuma; keep it for administration.",
+          "required": true
+        },
+        "MARIADB_DATABASE": {
+          "defaultValue": "uptime_kuma",
+          "description": "Database created on first boot for Uptime Kuma.",
+          "required": true
+        },
+        "MARIADB_USER": {
+          "defaultValue": "uptime_kuma",
+          "description": "User created on first boot with all privileges on MARIADB_DATABASE only (Uptime Kuma connects as this user).",
+          "required": true
+        },
+        "MARIADB_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "App user password, generated at deploy. Changing it later needs ALTER USER as well.",
+          "required": true
+        },
+        "MARIADB_URL": {
+          "defaultValue": "mariadb://${{MARIADB_USER}}:${{MARIADB_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:3306/${{MARIADB_DATABASE}}",
+          "description": "Private connection URL with the mariadb:// scheme (MariaDB Node.js/Python connectors).",
+          "required": false
+        },
+        "MYSQL_ROOT_PASSWORD": {
+          "defaultValue": "${{MARIADB_ROOT_PASSWORD}}",
+          "description": "Same as MARIADB_ROOT_PASSWORD, under Railway MySQL's name.",
+          "required": false
+        },
+        "MYSQL_DATABASE": {
+          "defaultValue": "${{MARIADB_DATABASE}}",
+          "description": "Same as MARIADB_DATABASE, under Railway MySQL's name.",
+          "required": false
+        },
+        "MYSQLHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private hostname of this database (mariadb.railway.internal). Used by the Data panel and other services.",
+          "required": false
+        },
+        "MYSQLPORT": {
+          "defaultValue": "3306",
+          "description": "MariaDB port (private network).",
+          "required": false
+        },
+        "MYSQLUSER": {
+          "defaultValue": "${{MARIADB_USER}}",
+          "description": "User for the Data panel and the MYSQL_* URLs (the app user, not root).",
+          "required": false
+        },
+        "MYSQLPASSWORD": {
+          "defaultValue": "${{MARIADB_PASSWORD}}",
+          "description": "Password of MYSQLUSER.",
+          "required": false
+        },
+        "MYSQLDATABASE": {
+          "defaultValue": "${{MARIADB_DATABASE}}",
+          "description": "Default database for the Data panel and the MYSQL_* URLs.",
+          "required": false
+        },
+        "MYSQL_URL": {
+          "defaultValue": "mysql://${{MYSQLUSER}}:${{MYSQLPASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:3306/${{MYSQLDATABASE}}",
+          "description": "Private connection URL, same name and format as Railway MySQL. Reference it as ${{MariaDB.MYSQL_URL}}.",
+          "required": false
+        },
+        "MARIADB_AUTO_UPGRADE": {
+          "defaultValue": "1",
+          "description": "Run mariadb-upgrade (after a backup of the system tables) when the image version changes. Read by the image's entrypoint.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Time MariaDB gets to shut down cleanly (flush InnoDB, save the buffer pool list) on redeploy.",
+          "required": true
+        },
+        "DB_TUNING": {
+          "defaultValue": "auto",
+          "description": "auto = size buffer pool, redo log, connections and temp tables from the container memory limit at every boot; off = MariaDB defaults.",
+          "required": false
+        },
+        "DB_MEMORY_LIMIT_MB": {
+          "defaultValue": "512",
+          "description": "RAM the tuning plans for in MB (512 suits Uptime Kuma; buffer pool = half). Raise it for thousands of monitors, or auto = the container limit.",
+          "required": false
+        },
+        "DB_BUFFER_POOL_MB": {
+          "defaultValue": "auto",
+          "description": "InnoDB buffer pool in MB. auto = half of DB_MEMORY_LIMIT_MB (memory is used only as data is read).",
+          "required": false
+        },
+        "DB_MAX_CONNECTIONS": {
+          "defaultValue": "auto",
+          "description": "max_connections. auto = DB_MEMORY_LIMIT_MB / 8, between 100 and 500.",
+          "required": false
+        },
+        "DB_COLLATION": {
+          "defaultValue": "utf8mb4_unicode_ci",
+          "description": "Server collation (charset is always utf8mb4). utf8mb4_unicode_ci works with every MySQL client; utf8mb4_uca1400_ai_ci is MariaDB's newer default.",
+          "required": false
+        },
+        "DB_SLOW_QUERY_LOG": {
+          "defaultValue": "off",
+          "description": "on = log queries slower than DB_LONG_QUERY_TIME to the mysql.slow_log table.",
+          "required": false
+        },
+        "DB_LONG_QUERY_TIME": {
+          "defaultValue": "2",
+          "description": "Slow query threshold in seconds (decimals allowed), used when DB_SLOW_QUERY_LOG=on.",
+          "required": false
+        },
+        "DB_EXTRA_ARGS": {
+          "defaultValue": "",
+          "description": "Extra mariadbd options appended to the command line, space-separated (e.g. --sql-mode=TRADITIONAL). They override the tuning file.",
+          "required": false
+        }
+      }
+    }
+  },
+  "buckets": []
+}

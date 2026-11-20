@@ -1,5 +1,5 @@
 {
-  "name": "Uptime Kuma 2.5 Monitoring + Status Pages (MariaDB)",
+  "name": "Uptime Kuma 2 Monitoring + Status Pages (MariaDB)",
   "description": "Self-hosted uptime monitoring, alerts and status pages on MariaDB.",
   "category": "Observability",
   "tags": [

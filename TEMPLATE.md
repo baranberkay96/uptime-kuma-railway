@@ -1,10 +1,10 @@
-# Uptime Kuma 2.5 Monitoring + Status Pages (MariaDB): Railway template spec
+# Uptime Kuma 2 Monitoring + Status Pages (MariaDB): Railway template spec
 
 ## Listing
 
 | Field | Value |
 |---|---|
-| Name | **Uptime Kuma 2.5 Monitoring + Status Pages (MariaDB)** |
+| Name | **Uptime Kuma 2 Monitoring + Status Pages (MariaDB)** |
 | Description | Self-hosted uptime monitoring, alerts and status pages on MariaDB. (66 chars) |
 | Category | Observability |
 | Tags | uptime-kuma, uptime, monitoring, status-page, alerts, healthcheck, mariadb, uptimerobot-alternative |

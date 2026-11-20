@@ -1,6 +1,6 @@
 # Deploy and Host Uptime Kuma with Railway
 
-Uptime Kuma is a self-hosted monitoring tool: it checks websites, APIs, ports, DNS, databases, Docker hosts and more every few seconds, alerts you through 90+ notification services, and publishes status pages. This template runs Uptime Kuma 2.5.12 on MariaDB 12.3 LTS, with the admin account created from a generated password.
+Uptime Kuma is a self-hosted monitoring tool: it checks websites, APIs, ports, DNS, databases, Docker hosts and more every few seconds, alerts you through 90+ notification services, and publishes status pages. This template runs Uptime Kuma 2.12 on MariaDB 12.3 LTS, with the admin account created from a generated password.
 
 > Community template, not affiliated with the Uptime Kuma project.
 

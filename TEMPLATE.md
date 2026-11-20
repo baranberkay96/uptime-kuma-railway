@@ -56,7 +56,7 @@ Uptime Kuma (repo build: official image + `railway/` scripts, volume `/app/data`
 
 ## Resource profile
 
-Measured values: see the round-12 report. Estimate: Uptime Kuma RAM_KUMA idle with a few monitors, MariaDB RAM_DB (tuned for 512 MB). About $3-6/month idle at Railway prices plus volumes ($0.15/GB-month). Minimum plan: Trial.
+Measured values: see the round-12 report. Estimate: Uptime Kuma 0.15 GB idle with a few monitors, MariaDB 0.16 GB (tuned for 512 MB). About $3-6/month idle at Railway prices plus volumes ($0.15/GB-month). Minimum plan: Trial.
 
 ## Verification checklist
 

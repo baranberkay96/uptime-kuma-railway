@@ -55,7 +55,7 @@ A fresh Uptime Kuma normally shows a "create your admin account" page to whoever
 
 **Resources and plans**
 
-Measured on Railway: Uptime Kuma about RAM_KUMA with a few monitors, MariaDB about RAM_DB. Each monitor adds a little memory and CPU; "Real Browser" monitors start Chromium and need several hundred MB more. Both services fit the Trial plan (1 GB per service).
+Measured on Railway: Uptime Kuma about 0.15 GB with a few monitors, MariaDB about 0.16 GB. Each monitor adds a little memory and CPU; "Real Browser" monitors start Chromium and need several hundred MB more. Both services fit the Trial plan (1 GB per service).
 
 **Scaling and upgrades**
 

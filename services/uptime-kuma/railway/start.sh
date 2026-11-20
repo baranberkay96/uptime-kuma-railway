@@ -12,8 +12,8 @@ if [[ "${PORT:-}" =~ ^[0-9]{1,5}$ ]] && [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535
   export PORT=3001
 fi
 unset UPTIME_KUMA_PORT
-export UPTIME_KUMA_HOST="${UPTIME_KUMA_HOST:-::}"
-[ "$UPTIME_KUMA_HOST" = "::" ] || log "UPTIME_KUMA_HOST=${UPTIME_KUMA_HOST}"
+# Without UPTIME_KUMA_HOST, Node listens on :: (IPv4 and IPv6), which Railway needs.
+[ -n "${UPTIME_KUMA_HOST:-}" ] && log "UPTIME_KUMA_HOST=${UPTIME_KUMA_HOST}"
 
 # --- Database type ---
 case "${UPTIME_KUMA_DB_TYPE:-mariadb}" in

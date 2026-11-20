@@ -116,7 +116,7 @@ async function main() {
                 fs.rmSync(lockFile, { force: true });
                 say(`set the password of '${first.username}' from UPTIME_KUMA_ADMIN_PASSWORD${reset ? " (UPTIME_KUMA_ADMIN_RESET_PASSWORD=true; set it back to false)" : " (account unlocked)"}`);
             } else {
-                say(`WARNING: '${first.username}' stays locked: UPTIME_KUMA_ADMIN_PASSWORD is still unusable (min. ${MIN_PASSWORD} characters, not too weak, no spaces).`);
+                say(`WARNING: password of '${first.username}' not changed${locked ? " (account stays locked)" : ""}: UPTIME_KUMA_ADMIN_PASSWORD is unusable (min. ${MIN_PASSWORD} characters, not too weak, no spaces).`);
             }
         } else {
             say(`admin account '${first.username}' exists; UPTIME_KUMA_ADMIN_PASSWORD is only used for the first start (change the password in Settings > Security).`);
